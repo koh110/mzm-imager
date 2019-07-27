@@ -1,8 +1,9 @@
+import cluster from 'cluster'
 import http from 'http'
 import express from 'express'
 import logger from './lib/logger'
 import identicon from './lib/identicon'
-import { LISTEN } from './config'
+import { WORKER_NUM, LISTEN } from './config'
 
 const app = express()
 
@@ -26,6 +27,18 @@ app.use((err, _req, res, _next) => {
 
 const server = http.createServer(app)
 
-server.listen(LISTEN, () => {
-  logger.info('Listening on', server.address())
-})
+if (cluster.isMaster) {
+  for (let i = 0; i < WORKER_NUM; i++) {
+    cluster.fork()
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+    const s = signal || code
+    logger.info(`exit worker #${worker.process.pid} (${s})`)
+    cluster.fork()
+  })
+} else {
+  server.listen(LISTEN, () => {
+    logger.info('Listening on', server.address())
+  })
+}
