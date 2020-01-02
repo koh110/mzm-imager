@@ -13,8 +13,8 @@ async function deploy({ config, remote, local }) {
   await remote('sudo hostname')
   await local('npm run test', { cwd: __dirname })
 
-  const target = '/var/www/mzm-imager/'
-  const tmpDir = '/tmp/mzm-imager/'
+  const target = '/var/www/mzm-imager'
+  const tmpDir = '/tmp/mzm-imager'
   const src = path.join(__dirname, 'dist', 'src')
 
   await remote(`sudo mkdir -p ${target}`)
@@ -32,7 +32,7 @@ async function deploy({ config, remote, local }) {
       `--exclude='.env'`,
       `-e 'ssh -i ${config.privateKeyPath}'`,
       `${src}/`,
-      `${config.username}@${config.host}:${tmpDir}`
+      `${config.username}@${config.host}:${tmpDir}/`
     ].join(' '),
     {
       cwd: __dirname
